@@ -8,13 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
+    private Connection connection;
+    {
+        try {
+            connection = Util.getConnection();
+        } catch (SQLException ignored) { }
+    }
+//Либо я что-то не понял, либо задача хочет что бы я использовал инициализатор экземпляра. Почему бы не запихать его просто в конструктор? Он ведь один у нас.
     public UserDaoJDBCImpl() {
 
     }
 
     public void createUsersTable() {
-        try(Connection connection = Util.getConnection();
-            Statement statement = connection.createStatement()) {
+        try(Statement statement = connection.createStatement()) {
             String createTableSQL = "CREATE TABLE IF NOT EXISTS users (" +
                     "id INT PRIMARY KEY AUTO_INCREMENT, " +
                     "name VARCHAR(50), " +
@@ -22,18 +28,15 @@ public class UserDaoJDBCImpl implements UserDao {
                     "age INT" +
                     ")";
             statement.executeUpdate(createTableSQL);
-            System.out.println("Таблица создана");
         } catch (SQLException e) {
             System.out.println("Таблица не создана");
         }
     }
 
     public void dropUsersTable() {
-        try(Connection connection = Util.getConnection();
-            Statement statement = connection.createStatement()) {
-            String dropTableSQL = "DROP TABLE USERS";
+        try(Statement statement = connection.createStatement()) {
+            String dropTableSQL = "DROP TABLE IF EXISTS USERS";
             statement.executeUpdate(dropTableSQL);
-            System.out.println("Таблица удалена");
         } catch (SQLException e) {
             System.out.println("Таблица не удалена");
         }
@@ -41,13 +44,11 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void saveUser(String name, String lastName, byte age) {
         String saveUserSQL = "INSERT INTO users (name, lastName, age) VALUES (?, ?, ?)";
-        try(Connection connection = Util.getConnection();
-            PreparedStatement prepareStatement = connection.prepareStatement(saveUserSQL)) {
+        try(PreparedStatement prepareStatement = connection.prepareStatement(saveUserSQL)) {
             prepareStatement.setString(1, name);
             prepareStatement.setString(2, lastName);
             prepareStatement.setInt(3, age);
             prepareStatement.executeUpdate();
-            System.out.println("Данные сохранены");
         } catch (SQLException e) {
             System.out.println("Данные не сохранены");
         }
@@ -55,10 +56,8 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void removeUserById(long id) {
         String removeUserSQL = "DELETE FROM users WHERE id = ?";
-        try (Connection connection = Util.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(removeUserSQL)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(removeUserSQL)) {
             preparedStatement.setLong(1, id);
-            System.out.println("Данные удалены");
         } catch (SQLException e) {
             System.out.println("Данные не удалены");
         }
@@ -67,14 +66,12 @@ public class UserDaoJDBCImpl implements UserDao {
     public List<User> getAllUsers() {
         String selectUsersSQL = "SELECT * FROM users";
         List<User> users = new ArrayList<>();
-        try (Connection connection = Util.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(selectUsersSQL);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectUsersSQL);
             ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 User user = new User(resultSet.getString("name"), resultSet.getString("lastName"), (byte) resultSet.getInt("age"));
                 users.add(user);
             }
-            System.out.println("Список создан");
         } catch (SQLException e) {
             System.out.println("Список не создан");
         }
@@ -83,10 +80,8 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void cleanUsersTable() {
         String cleanUsersSQL = "TRUNCATE TABLE users";
-        try (Connection connection = Util.getConnection();
-            PreparedStatement prepareStatement = connection.prepareStatement(cleanUsersSQL)) {
+        try (PreparedStatement prepareStatement = connection.prepareStatement(cleanUsersSQL)) {
             prepareStatement.executeUpdate(cleanUsersSQL);
-            System.out.println("Таблица очищена");
         } catch (SQLException e) {
             System.out.println("Таблица не очищена");
         }
