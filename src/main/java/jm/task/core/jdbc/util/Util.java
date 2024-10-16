@@ -8,8 +8,8 @@ import org.hibernate.service.ServiceRegistry;
 import java.sql.*;
 
 public class Util {
-    static final String URL = "jdbc:mysql://localhost:3306/users";
-    static final String USER = "Rudolf";
+    static final String URL = "jdbc:mysql://localhost:3306/spring_hiber";
+    static final String USER = "root";
     static final String PASS = "root";
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASS);
@@ -19,16 +19,15 @@ public class Util {
     static {
         try {
             Configuration configuration = new Configuration();
-//            configuration.setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver");
             configuration.setProperty("hibernate.connection.url", URL);
             configuration.setProperty("hibernate.connection.username", USER);
             configuration.setProperty("hibernate.connection.password", PASS);
             configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
-//            configuration.setProperty("hibernate.show_sql", "true");
-//            configuration.setProperty("hibernate.format_sql", "true");
             configuration.setProperty("hibernate.hbm2ddl.auto", "none");
             configuration.addAnnotatedClass(User.class);
-            ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
+            ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                    .applySettings(configuration.getProperties())
+                    .build();
             sessionFactory = configuration.buildSessionFactory(serviceRegistry);
         } catch (Throwable e) {
             e.printStackTrace();
@@ -37,6 +36,6 @@ public class Util {
     public static SessionFactory getSessionFactory() {
         return sessionFactory;
     }
-    //По идее надо бы закрывать это всё дело как и в прошлой задаче :)
+
 
 }
